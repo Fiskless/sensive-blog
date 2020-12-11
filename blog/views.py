@@ -3,11 +3,8 @@ from blog.models import Comment, Post, Tag
 from django.db.models import Count
 
 
-def get_related_posts_count(tag):
-    return tag.posts.count()
-
-
 def serialize_post(post):
+
     return {
         "title": post.title,
         "teaser_text": post.text[:200],
@@ -30,10 +27,10 @@ def serialize_tag(tag):
 
 def index(request):
 
-    all_posts = Post.objects.annotate(Count('likes')).order_by('-likes__count', 'title')
+    all_posts = Post.objects.annotate(Count('likes')).order_by('-likes__count', 'title').prefetch_related('author')
     most_popular_posts = all_posts[:5:]
 
-    fresh_posts = Post.objects.order_by('published_at')
+    fresh_posts = Post.objects.order_by('published_at').prefetch_related('author')
     most_fresh_posts = list(fresh_posts)[-5:]
 
     tags = Tag.objects.annotate(Count('posts__tags')).order_by('-posts__tags__count')
